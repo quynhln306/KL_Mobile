@@ -81,7 +81,7 @@ export default function CreateReviewScreen() {
         setComment(result.data.comment || '');
       }
     } catch (error: any) {
-      console.error('Error loading existing review:', error);
+      // Silent fail - review won't be loaded
     }
   };
 
@@ -115,7 +115,7 @@ export default function CreateReviewScreen() {
         );
       }
     } catch (error: any) {
-      console.error('Error checking existing review:', error);
+      // Silent fail - check won't complete
     }
   };
 

@@ -33,6 +33,7 @@ class AdminService {
     page?: number;
     limit?: number;
     status?: string;
+    includeDeleted?: boolean;
   }): Promise<ApiResponse> {
     const response = await apiClient.get(API_ENDPOINTS.ADMIN.TOURS, { params });
     return response.data;
@@ -102,6 +103,20 @@ class AdminService {
     const response = await apiClient.patch(
       API_ENDPOINTS.ADMIN.ORDER_UPDATE_STATUS(orderId),
       { status }
+    );
+    return response.data;
+  }
+
+  /**
+   * Update payment status
+   */
+  async updatePaymentStatus(
+    orderId: number,
+    paymentStatus: 'unpaid' | 'paid' | 'refunded'
+  ): Promise<ApiResponse> {
+    const response = await apiClient.patch(
+      API_ENDPOINTS.ADMIN.ORDER_UPDATE_PAYMENT(orderId),
+      { paymentStatus }
     );
     return response.data;
   }
@@ -181,8 +196,17 @@ class AdminService {
     page?: number;
     limit?: number;
     tourId?: number;
+    rating?: number;
   }): Promise<ApiResponse> {
-    const response = await apiClient.get('/api/admin/reviews', { params });
+    const response = await apiClient.get(API_ENDPOINTS.ADMIN.REVIEWS, { params });
+    return response.data;
+  }
+
+  /**
+   * Get review detail
+   */
+  async getReviewDetail(reviewId: number): Promise<ApiResponse<{ review: Review }>> {
+    const response = await apiClient.get(API_ENDPOINTS.ADMIN.REVIEW_DETAIL(reviewId));
     return response.data;
   }
 
@@ -190,7 +214,7 @@ class AdminService {
    * Delete review
    */
   async deleteReview(reviewId: number): Promise<ApiResponse> {
-    const response = await apiClient.delete(`/api/admin/reviews/${reviewId}`);
+    const response = await apiClient.delete(API_ENDPOINTS.ADMIN.REVIEW_DELETE(reviewId));
     return response.data;
   }
 }

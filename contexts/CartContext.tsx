@@ -52,7 +52,7 @@ export function CartProvider({ children }: CartProviderProps) {
         setItems(savedCart);
       }
     } catch (error) {
-      console.error('Error loading cart:', error);
+      // Silent fail - cart will be empty
     }
   };
 
@@ -60,7 +60,7 @@ export function CartProvider({ children }: CartProviderProps) {
     try {
       await storage.set(STORAGE_KEYS.CART, items);
     } catch (error) {
-      console.error('Error saving cart:', error);
+      // Silent fail - cart won't be persisted
     }
   };
 

@@ -31,6 +31,7 @@ export default function RegisterScreen() {
   const [phoneError, setPhoneError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  const [generalError, setGeneralError] = useState('');
 
   const [loading, setLoading] = useState(false);
 
@@ -45,6 +46,7 @@ export default function RegisterScreen() {
     setPhoneError('');
     setPasswordError('');
     setConfirmPasswordError('');
+    setGeneralError('');
 
     // Validate full name
     if (!fullName.trim()) {
@@ -106,16 +108,20 @@ export default function RegisterScreen() {
         phone: phone.trim() || undefined,
       });
 
-      // Sau khi register thành công, tự động login và navigate
-      Alert.alert('Đăng ký thành công', 'Chào mừng bạn đến với ứng dụng!', [
-        {
-          text: 'OK',
-          onPress: () => router.replace('/(client)/(tabs)' as any),
-        },
-      ]);
+      // Sau khi register thành công, redirect to index to handle routing
+      router.replace('/');
     } catch (error: any) {
-      console.error('Register error:', error);
-      Alert.alert('Đăng ký thất bại', error.message || 'Có lỗi xảy ra. Vui lòng thử lại.');
+      // Parse error message
+      let errorMessage = 'Có lỗi xảy ra. Vui lòng thử lại.';
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      // Show error banner
+      setGeneralError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -138,6 +144,13 @@ export default function RegisterScreen() {
             <Text style={styles.subtitle}>Tạo tài khoản mới để bắt đầu</Text>
           </View>
 
+          {/* Error Banner */}
+          {generalError ? (
+            <View style={styles.errorBanner}>
+              <Text style={styles.errorBannerText}>{generalError}</Text>
+            </View>
+          ) : null}
+
           {/* Form */}
           <View style={styles.form}>
             <Input
@@ -147,6 +160,7 @@ export default function RegisterScreen() {
               onChangeText={(text) => {
                 setFullName(text);
                 setFullNameError('');
+                setGeneralError('');
               }}
               error={fullNameError}
               autoCapitalize="words"
@@ -159,6 +173,7 @@ export default function RegisterScreen() {
               onChangeText={(text) => {
                 setEmail(text);
                 setEmailError('');
+                setGeneralError('');
               }}
               error={emailError}
               keyboardType="email-address"
@@ -269,5 +284,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#007AFF',
     fontWeight: '600',
+  },
+  errorBanner: {
+    backgroundColor: '#FFEBEE',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: '#F44336',
+  },
+  errorBannerText: {
+    color: '#C62828',
+    fontSize: 14,
+    fontWeight: '500',
   },
 });

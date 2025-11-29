@@ -109,7 +109,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       return false;
     } catch (error) {
-      console.error('Error checking session expiry:', error);
       return false;
     }
   };
@@ -147,14 +146,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         
         // Verify token with server
         try {
-          console.log('🔄 Verifying token with server...');
           const currentUser = await authService.me();
           setUser(currentUser);
           await storage.set(STORAGE_KEYS.USER, currentUser);
-          console.log('✅ Token verified successfully');
         } catch (error: any) {
-          console.error('❌ Token verification failed:', error);
-          
           // Check if it's a network error (backend not responding)
           if (error.message?.includes('Network') || error.code === 'ECONNABORTED' || !error.response) {
             console.log('⚠️ Network error - keeping token, will retry when app comes to foreground');
@@ -169,7 +164,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         console.log('ℹ️ No stored auth data found');
       }
     } catch (error) {
-      console.error('Error initializing auth:', error);
       await clearAuthData();
     } finally {
       setIsLoading(false);
@@ -195,14 +189,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         await storage.set(STORAGE_KEYS.USER, response.user);
         await storage.set(STORAGE_KEYS.ROLE, response.user.role);
         await storage.set(STORAGE_KEYS.LOGIN_TIMESTAMP, loginTime);
-        
-        console.log('✅ Login successful:', response.user.email, response.user.role);
-        console.log('⏰ Session will expire at:', new Date(expiryTime).toLocaleString());
       } else {
         throw new Error(response.message || 'Đăng nhập thất bại');
       }
     } catch (error: any) {
-      console.error('❌ Login error:', error);
+      // Re-throw error to be handled by login screen
       throw error;
     }
   };
@@ -238,7 +229,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         throw new Error(response.message || 'Đăng ký thất bại');
       }
     } catch (error: any) {
-      console.error('❌ Register error:', error);
+      // Re-throw error to be handled by register screen
       throw error;
     }
   };
@@ -249,16 +240,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       try {
         await authService.logout();
       } catch (error) {
-        console.error('Logout API error:', error);
         // Continue with local logout even if API fails
       }
       
       // Clear auth data
       await clearAuthData();
-      
-      console.log('✅ Logout successful');
     } catch (error) {
-      console.error('❌ Logout error:', error);
       throw error;
     }
   };
@@ -269,7 +256,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(currentUser);
       await storage.set(STORAGE_KEYS.USER, currentUser);
     } catch (error) {
-      console.error('Error refreshing user:', error);
       throw error;
     }
   };
@@ -286,12 +272,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
           setUser(updatedUser);
           await storage.set(STORAGE_KEYS.USER, updatedUser);
         }
-        console.log('✅ Profile updated successfully');
       } else {
         throw new Error(response.message || 'Cập nhật thông tin thất bại');
       }
     } catch (error: any) {
-      console.error('❌ Update profile error:', error);
       throw error;
     }
   };
@@ -307,20 +291,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
       });
       
       if (response.success) {
-        console.log('✅ Password changed successfully');
-        
         // Cập nhật lại login timestamp để reset session 7 ngày
         const loginTime = Date.now();
         const expiryTime = loginTime + SESSION_CONFIG.EXPIRY_MS;
         await storage.set(STORAGE_KEYS.LOGIN_TIMESTAMP, loginTime);
         setSessionExpiresAt(new Date(expiryTime));
-        
-        console.log('⏰ Session renewed, will expire at:', new Date(expiryTime).toLocaleString());
       } else {
         throw new Error(response.message || 'Đổi mật khẩu thất bại');
       }
     } catch (error: any) {
-      console.error('❌ Change password error:', error);
       throw error;
     }
   };

@@ -29,11 +29,14 @@ export default function RootLayout() {
               {/* Admin screens */}
               <Stack.Screen name="(admin)/(tabs)" />
               
+              {/* Guide screens */}
+              <Stack.Screen name="(guide)/(tabs)" />
+              
               {/* Old screens - will remove later */}
               <Stack.Screen name="(tabs)" />
               <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
             </Stack>
-              <StatusBar style="dark" translucent backgroundColor="transparent" />
+              <StatusBar style="auto" />
             </ThemeProvider>
           </CartProvider>
         </AuthProvider>

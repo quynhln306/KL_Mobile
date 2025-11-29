@@ -76,8 +76,7 @@ export default function TourDetailScreen() {
         setReviewStats(result.data.stats);
       }
     } catch (error: any) {
-      console.error('Error loading reviews:', error);
-      // Không hiển thị alert, chỉ log error
+      // Silent fail - reviews won't be loaded
     } finally {
       setLoadingReviews(false);
     }

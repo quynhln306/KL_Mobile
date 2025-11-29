@@ -25,7 +25,6 @@ export const homeService = {
         data: response.data.data,
       };
     } catch (error) {
-      console.error('Error getting home data:', error);
       return {
         success: false,
         data: {
