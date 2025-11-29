@@ -16,13 +16,15 @@ export default function Index() {
       if (isAuthenticated && role) {
         // Already logged in, navigate based on role
         if (role === 'admin') {
-          router.replace('/(admin)/(tabs)');
+          router.replace('/(admin)/(tabs)' as any);
+        } else if (role === 'guide') {
+          router.replace('/(guide)/(tabs)' as any);
         } else {
-          router.replace('/(client)/(tabs)');
+          router.replace('/(client)/(tabs)' as any);
         }
       } else {
         // Not logged in, go to login
-        router.replace('/(auth)/login');
+        router.replace('/(auth)/login' as any);
       }
     }
   }, [isAuthenticated, isLoading, role]);

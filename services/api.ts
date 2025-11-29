@@ -26,21 +26,17 @@ apiClient.interceptors.request.use(
       
       if (token && token.trim() !== '') {
         config.headers.Authorization = `Bearer ${token}`;
-        console.log('📤 API Request with token:', config.method?.toUpperCase(), config.url);
       } else {
         // Remove Authorization header if no token
         delete config.headers.Authorization;
-        console.log('📤 API Request (no token):', config.method?.toUpperCase(), config.url);
       }
       
       return config;
     } catch (error) {
-      console.error('Error in request interceptor:', error);
       return config;
     }
   },
   (error) => {
-    console.error('Request interceptor error:', error);
     return Promise.reject(error);
   }
 );
@@ -48,12 +44,9 @@ apiClient.interceptors.request.use(
 // Response interceptor - Handle errors
 apiClient.interceptors.response.use(
   (response) => {
-    console.log('📥 API Response:', response.config.url, response.status);
     return response;
   },
   async (error: AxiosError) => {
-    console.error('❌ API Error:', error.config?.url, error.response?.status);
-    
     const originalRequest = error.config;
     
     // Handle 401 Unauthorized
@@ -63,7 +56,6 @@ apiClient.interceptors.response.use(
       
       // Kiểm tra nếu là login request - trả về message từ server
       if (requestUrl.includes('/login') || requestUrl.includes('/auth')) {
-        console.log('🔒 Login failed - Invalid credentials');
         return Promise.reject({
           message: errorData?.message || 'Email hoặc mật khẩu không chính xác',
           status: 401,
@@ -72,7 +64,6 @@ apiClient.interceptors.response.use(
       }
       
       // Các request khác - token expired
-      console.log('🔒 Unauthorized - Token expired or invalid');
       return Promise.reject({
         message: ERROR_MESSAGES.UNAUTHORIZED,
         status: 401,

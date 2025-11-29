@@ -69,6 +69,7 @@ export const API_ENDPOINTS = {
     ORDERS: '/api/admin/orders',
     ORDER_DETAIL: (id: number) => `/api/admin/orders/${id}`,
     ORDER_UPDATE_STATUS: (id: number) => `/api/admin/orders/${id}/status`,
+    ORDER_UPDATE_PAYMENT: (id: number) => `/api/admin/orders/${id}/payment`,
     
     // Guides
     GUIDES: '/api/admin/guides',
@@ -82,6 +83,11 @@ export const API_ENDPOINTS = {
     SCHEDULE_CREATE: '/api/admin/guide-schedules',
     SCHEDULE_DELETE: (id: number) => `/api/admin/guide-schedules/${id}`,
     AVAILABLE_GUIDES: '/admin/guide-schedule/available-guides',
+    
+    // Reviews
+    REVIEWS: '/api/admin/reviews',
+    REVIEW_DETAIL: (id: number) => `/api/admin/reviews/${id}`,
+    REVIEW_DELETE: (id: number) => `/api/admin/reviews/${id}`,
   },
   
   // Guide APIs
@@ -89,7 +95,9 @@ export const API_ENDPOINTS = {
     DASHBOARD: '/api/guide/dashboard',
     SCHEDULE: '/api/guide/schedule',
     SCHEDULE_TOUR: (tourId: number) => `/api/guide/schedule/tour/${tourId}`,
+    CHECK_CONFLICT: '/api/guide/schedule/check-conflict',
     LEAVE_REQUEST: '/api/guide/schedule/leave-request',
+    CANCEL_LEAVE_REQUEST: (id: number) => `/api/guide/schedule/leave-request/${id}`,
   },
 };
 

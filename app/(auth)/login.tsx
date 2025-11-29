@@ -24,6 +24,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [generalError, setGeneralError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const { login } = useAuth();
@@ -34,6 +35,7 @@ export default function LoginScreen() {
     // Reset errors
     setEmailError('');
     setPasswordError('');
+    setGeneralError('');
 
     // Validate email
     if (!email.trim()) {
@@ -66,15 +68,20 @@ export default function LoginScreen() {
 
       await login(email.trim(), password);
 
-      // Navigate based on role
-      // Note: Admin tabs chưa tạo, tạm thời admin cũng vào client
-      router.replace('/(client)/(tabs)' as any);
+      // Login success - redirect to index to handle routing based on role
+      router.replace('/');
     } catch (error: any) {
-      console.error('Login error:', error);
-      Alert.alert(
-        'Đăng nhập thất bại',
-        error.message || 'Email hoặc mật khẩu không chính xác'
-      );
+      // Parse error message
+      let errorMessage = 'Email hoặc mật khẩu không chính xác';
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      // Show error banner
+      setGeneralError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -102,6 +109,13 @@ export default function LoginScreen() {
             </Text>
           </View>
 
+          {/* Error Banner */}
+          {generalError ? (
+            <View style={styles.errorBanner}>
+              <Text style={styles.errorBannerText}>{generalError}</Text>
+            </View>
+          ) : null}
+
           {/* Form */}
           <View style={styles.form}>
             <Input
@@ -111,6 +125,7 @@ export default function LoginScreen() {
               onChangeText={(text) => {
                 setEmail(text);
                 setEmailError('');
+                setGeneralError('');
               }}
               error={emailError}
               keyboardType="email-address"
@@ -125,6 +140,7 @@ export default function LoginScreen() {
               onChangeText={(text) => {
                 setPassword(text);
                 setPasswordError('');
+                setGeneralError('');
               }}
               error={passwordError}
               secureTextEntry
@@ -214,5 +230,18 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#8E8E93',
     marginBottom: 4,
+  },
+  errorBanner: {
+    backgroundColor: '#FFEBEE',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: '#F44336',
+  },
+  errorBannerText: {
+    color: '#C62828',
+    fontSize: 14,
+    fontWeight: '500',
   },
 });
