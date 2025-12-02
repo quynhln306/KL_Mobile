@@ -3,7 +3,7 @@
  * Giỏ hàng - xem và quản lý các tour đã chọn
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -15,6 +15,8 @@ import {
   SafeAreaView,
   StatusBar,
   Platform,
+  TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,9 +25,25 @@ import { Button, EmptyState } from '@/components/shared';
 import { QuantitySelector } from '@/components/client';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { CartItem } from '@/types';
+import { apiClient } from '@/services/api';
+import { API_ENDPOINTS } from '@/constants/api';
+import { AppliedCoupon } from '@/contexts/CartContext';
 
 export default function CartScreen() {
-  const { items, removeFromCart, updateQuantity, getTotalAmount, clearCart } = useCart();
+  const { 
+    items, 
+    removeFromCart, 
+    updateQuantity, 
+    getTotalAmount, 
+    clearCart,
+    appliedCoupon,
+    setAppliedCoupon,
+  } = useCart();
+  
+  // State cho mã khuyến mãi
+  const [couponCode, setCouponCode] = useState(appliedCoupon?.coupon.code || '');
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState('');
 
   const handleUpdateQuantity = (tourId: number, updates: Partial<Pick<CartItem, 'quantityAdult' | 'quantityChildren' | 'quantityBaby'>>) => {
     updateQuantity(tourId, updates);
@@ -77,10 +95,56 @@ export default function CartScreen() {
         {
           text: 'Xóa tất cả',
           style: 'destructive',
-          onPress: () => clearCart(),
+          onPress: () => {
+            clearCart();
+            setCouponCode('');
+            setCouponError('');
+          },
         },
       ]
     );
+  };
+
+  // Áp dụng mã khuyến mãi
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      setCouponError('Vui lòng nhập mã khuyến mãi');
+      return;
+    }
+
+    setCouponLoading(true);
+    setCouponError('');
+
+    try {
+      const orderTotal = getTotalAmount();
+      const response = await apiClient.post(API_ENDPOINTS.CLIENT.COUPON_VALIDATE, {
+        code: couponCode.trim().toUpperCase(),
+        orderTotal,
+      });
+
+      if (response.data.success && response.data.data.valid) {
+        setAppliedCoupon({
+          coupon: response.data.data.coupon,
+          discountAmount: response.data.data.discountAmount,
+        });
+        setCouponError('');
+      } else {
+        setCouponError(response.data.data.message || 'Mã khuyến mãi không hợp lệ');
+        setAppliedCoupon(null);
+      }
+    } catch (error: any) {
+      setCouponError(error.message || 'Có lỗi xảy ra');
+      setAppliedCoupon(null);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  // Xóa mã khuyến mãi
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    setCouponError('');
   };
 
   if (items.length === 0) {
@@ -95,7 +159,9 @@ export default function CartScreen() {
     );
   }
 
-  const total = getTotalAmount();
+  const subtotal = getTotalAmount();
+  const discountAmount = appliedCoupon?.discountAmount || 0;
+  const total = subtotal - discountAmount;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -205,6 +271,79 @@ export default function CartScreen() {
             </View>
           </View>
         ))}
+
+        {/* Coupon Section */}
+        <View style={styles.couponSection}>
+          <Text style={styles.couponTitle}>Mã khuyến mãi</Text>
+          
+          {appliedCoupon ? (
+            // Đã áp dụng mã
+            <View style={styles.appliedCoupon}>
+              <View style={styles.appliedCouponInfo}>
+                <Ionicons name="pricetag" size={20} color="#34C759" />
+                <View style={styles.appliedCouponText}>
+                  <Text style={styles.appliedCouponCode}>{appliedCoupon.coupon.code}</Text>
+                  <Text style={styles.appliedCouponDiscount}>
+                    Giảm {formatCurrency(appliedCoupon.discountAmount)}
+                  </Text>
+                </View>
+              </View>
+              <TouchableOpacity onPress={handleRemoveCoupon} style={styles.removeCouponBtn}>
+                <Ionicons name="close-circle" size={24} color="#FF3B30" />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            // Chưa áp dụng mã
+            <View>
+              <View style={styles.couponInputRow}>
+                <TextInput
+                  style={styles.couponInput}
+                  placeholder="Nhập mã khuyến mãi"
+                  placeholderTextColor="#8E8E93"
+                  value={couponCode}
+                  onChangeText={(text) => {
+                    setCouponCode(text.toUpperCase());
+                    setCouponError('');
+                  }}
+                  autoCapitalize="characters"
+                  editable={!couponLoading}
+                />
+                <TouchableOpacity
+                  style={[styles.applyCouponBtn, couponLoading && styles.applyCouponBtnDisabled]}
+                  onPress={handleApplyCoupon}
+                  disabled={couponLoading}
+                >
+                  {couponLoading ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <Text style={styles.applyCouponBtnText}>Áp dụng</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+              {couponError ? (
+                <Text style={styles.couponError}>{couponError}</Text>
+              ) : null}
+            </View>
+          )}
+        </View>
+
+        {/* Order Summary */}
+        <View style={styles.orderSummary}>
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Tạm tính</Text>
+            <Text style={styles.summaryValue}>{formatCurrency(subtotal)}</Text>
+          </View>
+          {appliedCoupon && (
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Giảm giá</Text>
+              <Text style={styles.discountValue}>-{formatCurrency(discountAmount)}</Text>
+            </View>
+          )}
+          <View style={[styles.summaryRow, styles.totalRow]}>
+            <Text style={styles.totalLabel}>Tổng cộng</Text>
+            <Text style={styles.totalValue}>{formatCurrency(total)}</Text>
+          </View>
+        </View>
       </ScrollView>
 
       {/* Bottom Bar */}
@@ -212,6 +351,9 @@ export default function CartScreen() {
         <View style={styles.bottomTotal}>
           <Text style={styles.bottomTotalLabel}>Tổng cộng</Text>
           <Text style={styles.bottomTotalValue}>{formatCurrency(total)}</Text>
+          {appliedCoupon && (
+            <Text style={styles.bottomDiscount}>Đã giảm {formatCurrency(discountAmount)}</Text>
+          )}
         </View>
         <Button
           title="Thanh toán"
@@ -376,5 +518,132 @@ const styles = StyleSheet.create({
   },
   checkoutButton: {
     flex: 1,
+  },
+  bottomDiscount: {
+    fontSize: 12,
+    color: '#34C759',
+    marginTop: 2,
+  },
+  // Coupon styles
+  couponSection: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+  couponTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000000',
+    marginBottom: 12,
+  },
+  couponInputRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  couponInput: {
+    flex: 1,
+    height: 44,
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    fontSize: 15,
+    color: '#000000',
+    backgroundColor: '#F9F9F9',
+  },
+  applyCouponBtn: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minWidth: 80,
+  },
+  applyCouponBtnDisabled: {
+    backgroundColor: '#A0A0A0',
+  },
+  applyCouponBtnText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  couponError: {
+    color: '#FF3B30',
+    fontSize: 13,
+    marginTop: 8,
+  },
+  appliedCoupon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#E8F5E9',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#34C759',
+  },
+  appliedCouponInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  appliedCouponText: {
+    gap: 2,
+  },
+  appliedCouponCode: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#34C759',
+  },
+  appliedCouponDiscount: {
+    fontSize: 13,
+    color: '#666666',
+  },
+  removeCouponBtn: {
+    padding: 4,
+  },
+  // Order Summary styles
+  orderSummary: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  summaryLabel: {
+    fontSize: 14,
+    color: '#8E8E93',
+  },
+  summaryValue: {
+    fontSize: 14,
+    color: '#000000',
+  },
+  discountValue: {
+    fontSize: 14,
+    color: '#34C759',
+    fontWeight: '500',
+  },
+  totalRow: {
+    marginTop: 8,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5EA',
+    marginBottom: 0,
+  },
+  totalLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000000',
+  },
+  totalValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FF3B30',
   },
 });

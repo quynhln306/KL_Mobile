@@ -138,16 +138,6 @@ export default function ChangePasswordScreen() {
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
         >
-        {/* Session Info */}
-        {sessionExpiresAt && (
-          <View style={styles.sessionInfo}>
-            <Ionicons name="time-outline" size={16} color="#007AFF" />
-            <Text style={styles.sessionText}>
-              Phiên đăng nhập hết hạn: {sessionExpiresAt.toLocaleDateString('vi-VN')}
-            </Text>
-          </View>
-        )}
-
         <View style={styles.form}>
           {/* Current Password */}
           <View style={styles.inputWrapper}>

@@ -20,11 +20,11 @@ import { Button, Input, ScreenHeader } from '@/components/shared';
 import { formatCurrency } from '@/utils/format';
 import { isValidPhone } from '@/utils/validation';
 
-type PaymentMethod = 'cash' | 'zalopay' | 'momo';
+type PaymentMethod = 'cash' | 'zalopay' | 'vnpay';
 
 export default function CheckoutScreen() {
   const { user } = useAuth();
-  const { items, getTotalAmount, clearCart } = useCart();
+  const { items, getTotalAmount, clearCart, appliedCoupon, getDiscountAmount, getFinalTotal } = useCart();
 
   const [fullName, setFullName] = useState(user?.fullName || '');
   const [phone, setPhone] = useState(user?.phone || '');
@@ -75,6 +75,7 @@ export default function CheckoutScreen() {
         phone,
         note,
         paymentMethod,
+        couponCode: appliedCoupon?.coupon.code || '',
         items: items.map((item) => ({
           tourId: item.tourId,
           quantityAdult: item.quantityAdult,
@@ -110,12 +111,14 @@ export default function CheckoutScreen() {
     }
   };
 
-  const total = getTotalAmount();
+  const subtotal = getTotalAmount();
+  const discountAmount = getDiscountAmount();
+  const total = getFinalTotal();
 
   const paymentMethods = [
     { value: 'cash' as PaymentMethod, label: 'Tiền mặt', icon: 'cash-outline' },
     { value: 'zalopay' as PaymentMethod, label: 'ZaloPay', icon: 'wallet-outline' },
-    { value: 'momo' as PaymentMethod, label: 'MoMo', icon: 'card-outline' },
+    { value: 'vnpay' as PaymentMethod, label: 'VNPay', icon: 'card-outline' },
   ];
 
   return (
@@ -213,6 +216,22 @@ export default function CheckoutScreen() {
                 )}
               </Text>
             </View>
+
+            <View style={styles.divider} />
+
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Tạm tính</Text>
+              <Text style={styles.summaryValue}>{formatCurrency(subtotal)}</Text>
+            </View>
+
+            {appliedCoupon && (
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>
+                  Giảm giá ({appliedCoupon.coupon.code})
+                </Text>
+                <Text style={styles.discountValue}>-{formatCurrency(discountAmount)}</Text>
+              </View>
+            )}
 
             <View style={styles.divider} />
 
@@ -316,6 +335,11 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#E5E5EA',
     marginVertical: 12,
+  },
+  discountValue: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#34C759',
   },
   totalLabel: {
     fontSize: 16,

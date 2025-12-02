@@ -50,7 +50,7 @@ export const API_ENDPOINTS = {
     USER_CHANGE_PASSWORD: '/api/client/user/change-password',
     
     // Coupon
-    COUPON_VALIDATE: '/coupon/validate',
+    COUPON_VALIDATE: '/api/client/coupons/validate',
   },
   
   // Admin APIs

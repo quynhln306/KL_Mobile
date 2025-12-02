@@ -8,6 +8,19 @@ import { storage } from '@/utils/storage';
 import { STORAGE_KEYS } from '@/constants/api';
 import { CartItem } from '@/types';
 
+// Coupon types
+export interface CouponData {
+  code: string;
+  description?: string;
+  discountType: 'percent' | 'fixed';
+  discountValue: number;
+}
+
+export interface AppliedCoupon {
+  coupon: CouponData;
+  discountAmount: number;
+}
+
 interface CartContextType {
   items: CartItem[];
   itemCount: number; // Total number of people (adults + children + babies)
@@ -24,6 +37,11 @@ interface CartContextType {
   removeFromCart: (tourId: number) => void;
   updateQuantity: (tourId: number, updates: Partial<CartItem>) => void;
   getTotalAmount: () => number;
+  // Coupon methods
+  appliedCoupon: AppliedCoupon | null;
+  setAppliedCoupon: (coupon: AppliedCoupon | null) => void;
+  getDiscountAmount: () => number;
+  getFinalTotal: () => number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -34,6 +52,7 @@ interface CartProviderProps {
 
 export function CartProvider({ children }: CartProviderProps) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
 
   // Load cart from storage on mount
   useEffect(() => {
@@ -124,6 +143,7 @@ export function CartProvider({ children }: CartProviderProps) {
 
   const clearCart = () => {
     setItems([]);
+    setAppliedCoupon(null);
   };
 
   const isInCart = (tourId: number): boolean => {
@@ -149,6 +169,9 @@ export function CartProvider({ children }: CartProviderProps) {
     return total + adultTotal + childrenTotal + babyTotal;
   }, 0);
 
+  const getDiscountAmount = () => appliedCoupon?.discountAmount || 0;
+  const getFinalTotal = () => subTotal - getDiscountAmount();
+
   const value: CartContextType = {
     items,
     itemCount,
@@ -165,6 +188,11 @@ export function CartProvider({ children }: CartProviderProps) {
     removeFromCart: removeItem,
     updateQuantity: updateItem,
     getTotalAmount: () => subTotal,
+    // Coupon
+    appliedCoupon,
+    setAppliedCoupon,
+    getDiscountAmount,
+    getFinalTotal,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

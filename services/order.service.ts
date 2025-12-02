@@ -11,11 +11,9 @@ interface CreateOrderData {
   fullName: string;
   phone: string;
   note?: string;
-  paymentMethod: 'cash' | 'zalopay' | 'momo';
+  paymentMethod: 'cash' | 'zalopay' | 'vnpay';
   items: CartItem[];
-  coupon?: {
-    code: string;
-  };
+  couponCode?: string;
 }
 
 interface OrderListParams {

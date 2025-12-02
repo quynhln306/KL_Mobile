@@ -120,24 +120,7 @@ export default function ClientProfileScreen() {
           )}
         </View>
         
-        {/* Session Info */}
-        {remainingDays !== null && (
-          <View style={styles.sessionBadge}>
-            <Ionicons 
-              name="time-outline" 
-              size={14} 
-              color={remainingDays <= 1 ? '#FF3B30' : '#007AFF'} 
-            />
-            <Text style={[
-              styles.sessionText,
-              remainingDays <= 1 && styles.sessionTextWarning
-            ]}>
-              {remainingDays <= 0 
-                ? 'Phiên sắp hết hạn' 
-                : `Còn ${remainingDays} ngày`}
-            </Text>
-          </View>
-        )}
+
       </View>
 
       {/* Menu Items */}
