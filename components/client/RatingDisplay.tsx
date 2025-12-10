@@ -59,7 +59,7 @@ export function RatingDisplay({
       {showNumber && (
         <Text style={[styles.ratingText, { fontSize }]}>
           {rating.toFixed(1)}
-          {totalReviews !== undefined && ` (${totalReviews})`}
+          {totalReviews !== undefined ? ` (${totalReviews})` : ''}
         </Text>
       )}
     </View>

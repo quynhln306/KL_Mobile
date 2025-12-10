@@ -16,9 +16,11 @@ interface TourCardProps {
 }
 
 export function TourCard({ tour, onPress }: TourCardProps) {
-  const hasDiscount = tour.priceAdult && tour.priceNewAdult < tour.priceAdult;
+  const priceAdult = tour.priceAdult ?? 0;
+  const priceNewAdult = tour.priceNewAdult ?? 0;
+  const hasDiscount = priceAdult > 0 && priceNewAdult < priceAdult;
   const discountPercent = hasDiscount
-    ? Math.round(((tour.priceAdult - tour.priceNewAdult) / tour.priceAdult) * 100)
+    ? Math.round(((priceAdult - priceNewAdult) / priceAdult) * 100)
     : 0;
 
   return (
@@ -34,20 +36,20 @@ export function TourCard({ tour, onPress }: TourCardProps) {
         )}
         
         {/* Discount Badge */}
-        {hasDiscount && (
+        {hasDiscount ? (
           <View style={styles.discountBadge}>
             <Text style={styles.discountText}>-{discountPercent}%</Text>
           </View>
-        )}
+        ) : null}
         
         {/* Stock Badge */}
-        {tour.stockAdult !== undefined && tour.stockAdult < 5 && (
+        {tour.stockAdult != null && tour.stockAdult < 5 ? (
           <View style={styles.stockBadge}>
             <Text style={styles.stockText}>
               {tour.stockAdult === 0 ? 'Hết chỗ' : `Còn ${tour.stockAdult} chỗ`}
             </Text>
           </View>
-        )}
+        ) : null}
       </View>
 
       {/* Content */}
@@ -58,7 +60,7 @@ export function TourCard({ tour, onPress }: TourCardProps) {
         </Text>
 
         {/* Rating */}
-        {tour.rating !== undefined && tour.rating > 0 && (
+        {tour.rating != null && tour.rating > 0 ? (
           <View style={styles.ratingContainer}>
             <RatingDisplay 
               rating={tour.rating} 
@@ -66,30 +68,30 @@ export function TourCard({ tour, onPress }: TourCardProps) {
               size="small"
             />
           </View>
-        )}
+        ) : null}
 
         {/* Info Row */}
         <View style={styles.infoRow}>
-          {tour.time && (
+          {tour.time ? (
             <View style={styles.infoItem}>
               <Ionicons name="time-outline" size={14} color="#8E8E93" />
               <Text style={styles.infoText}>{tour.time}</Text>
             </View>
-          )}
-          {tour.vehicle && (
+          ) : null}
+          {tour.vehicle ? (
             <View style={styles.infoItem}>
               <Ionicons name="car-outline" size={14} color="#8E8E93" />
               <Text style={styles.infoText}>{tour.vehicle}</Text>
             </View>
-          )}
+          ) : null}
         </View>
 
         {/* Price */}
         <View style={styles.priceContainer}>
-          {hasDiscount && (
-            <Text style={styles.oldPrice}>{formatCurrency(tour.priceAdult)}</Text>
-          )}
-          <Text style={styles.price}>{formatCurrency(tour.priceNewAdult)}</Text>
+          {hasDiscount ? (
+            <Text style={styles.oldPrice}>{formatCurrency(priceAdult)}</Text>
+          ) : null}
+          <Text style={styles.price}>{formatCurrency(priceNewAdult)}</Text>
           <Text style={styles.priceLabel}>/người</Text>
         </View>
       </View>

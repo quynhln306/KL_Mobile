@@ -175,38 +175,34 @@ export default function BookingScreen() {
           <Text style={styles.sectionTitle}>Chọn số lượng</Text>
 
           <QuantitySelector
-            label="Người lớn"
+            label="Người lớn (từ 12 tuổi)"
             value={quantityAdult}
             onChange={setQuantityAdult}
             min={0}
             max={tour.stockAdult}
-            price={tour.priceNewAdult}
+            price={tour.priceNewAdult ?? 0}
             priceLabel="/người"
           />
 
-          {tour.priceNewChildren > 0 && (
-            <QuantitySelector
-              label="Trẻ em (2-11 tuổi)"
-              value={quantityChildren}
-              onChange={setQuantityChildren}
-              min={0}
-              max={tour.stockChildren || 0}
-              price={tour.priceNewChildren}
-              priceLabel="/trẻ"
-            />
-          )}
+          <QuantitySelector
+            label="Trẻ em (2-11 tuổi)"
+            value={quantityChildren}
+            onChange={setQuantityChildren}
+            min={0}
+            max={tour.stockChildren || 0}
+            price={tour.priceNewChildren ?? 0}
+            priceLabel="/trẻ"
+          />
 
-          {tour.priceNewBaby > 0 && (
-            <QuantitySelector
-              label="Trẻ sơ sinh (< 2 tuổi)"
-              value={quantityBaby}
-              onChange={setQuantityBaby}
-              min={0}
-              max={tour.stockBaby || 0}
-              price={tour.priceNewBaby}
-              priceLabel="/em bé"
-            />
-          )}
+          <QuantitySelector
+            label="Em bé (dưới 2 tuổi)"
+            value={quantityBaby}
+            onChange={setQuantityBaby}
+            min={0}
+            max={tour.stockBaby || 0}
+            price={tour.priceNewBaby ?? 0}
+            priceLabel="/em bé"
+          />
         </View>
 
         {/* Summary */}

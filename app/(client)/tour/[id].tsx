@@ -243,42 +243,41 @@ export default function TourDetailScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Giá tour</Text>
             <View style={styles.priceCard}>
+              {/* Người lớn */}
               <View style={styles.priceRow}>
-                <Text style={styles.priceLabel}>Người lớn:</Text>
+                <Text style={styles.priceLabel}>Người lớn (từ 12 tuổi):</Text>
                 <View style={styles.priceValues}>
-                  {hasDiscount && (
+                  {hasDiscount ? (
                     <Text style={styles.oldPrice}>
                       {formatCurrency(tour.priceAdult)}
                     </Text>
-                  )}
+                  ) : null}
                   <Text style={styles.newPrice}>
-                    {formatCurrency(tour.priceNewAdult)}
+                    {formatCurrency(tour.priceNewAdult ?? 0)}
                   </Text>
-                  {hasDiscount && (
+                  {hasDiscount ? (
                     <View style={styles.discountBadge}>
                       <Text style={styles.discountText}>-{discountPercent}%</Text>
                     </View>
-                  )}
+                  ) : null}
                 </View>
               </View>
 
-              {tour.priceNewChildren > 0 && (
-                <View style={styles.priceRow}>
-                  <Text style={styles.priceLabel}>Trẻ em (2-11 tuổi):</Text>
-                  <Text style={styles.newPrice}>
-                    {formatCurrency(tour.priceNewChildren)}
-                  </Text>
-                </View>
-              )}
+              {/* Trẻ em */}
+              <View style={styles.priceRow}>
+                <Text style={styles.priceLabel}>Trẻ em (2-11 tuổi):</Text>
+                <Text style={styles.newPrice}>
+                  {formatCurrency(tour.priceNewChildren ?? 0)}
+                </Text>
+              </View>
 
-              {tour.priceNewBaby > 0 && (
-                <View style={styles.priceRow}>
-                  <Text style={styles.priceLabel}>Trẻ sơ sinh (&lt; 2 tuổi):</Text>
-                  <Text style={styles.newPrice}>
-                    {formatCurrency(tour.priceNewBaby)}
-                  </Text>
-                </View>
-              )}
+              {/* Em bé */}
+              <View style={styles.priceRow}>
+                <Text style={styles.priceLabel}>Em bé (dưới 2 tuổi):</Text>
+                <Text style={styles.newPrice}>
+                  {formatCurrency(tour.priceNewBaby ?? 0)}
+                </Text>
+              </View>
             </View>
           </View>
 
